@@ -1,0 +1,25 @@
+{
+	"task_name": "ner",
+
+	"data_dir": "data/raw",
+	"output_dir": "data/processed",
+	"init_checkpoint": "data/chinese_L-12_H-768_A-12",
+	"train_file": "train.npy",
+	"eval_file": "eval.npy",
+	"test_file": "test.npy",
+	"tag_file": "tags.txt",
+
+	"buffer": 10000,
+	"batch_size": 32,
+	"max_seq_length": 256,
+	"epochs": 10,
+	"learning_rate": 0.1,
+	"num_warmup_steps": 2,
+
+	"cell_type": "lstm",
+	"hidden_size": 128,
+	"dropout": 0.8,
+	"num_layers": 1,
+
+
+}
