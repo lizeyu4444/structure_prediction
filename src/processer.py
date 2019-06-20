@@ -110,7 +110,7 @@ class NerProcessor(DataProcessor):
         for (i, line) in enumerate(lines):
             text = tokenization.convert_to_unicode(line[0])
             label = tokenization.convert_to_unicode(line[1])
-            examples.append((text.encode('utf-8'), label.encode('utf-8')))
+            examples.append((text, label))
         return examples
 
     def _read_data(self, input_file):
