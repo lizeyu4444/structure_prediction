@@ -148,9 +148,8 @@ class NerProcessor(DataProcessor):
                 f.write('\t'.join(example) + '\n')
 
 
-
 def map_fn_builder(label_2_id, tokenizer, max_seq_length):
-
+    """Function builder for input transformation."""
     def map_fn(example):
         # tokenize
         tokens = tokenizer.tokenize(example[0])
@@ -186,17 +185,15 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
     return map_fn
 
 
-if __name__ == '__main__':
-
+def main(param_file):
+    """Main function to process data."""
     # Load params
-    with open('bert_base/config.json', 'r') as fi:
+    with open(param_file, 'rb') as fi:
         params = json.load(fi)
-
-    init_checkpoint = params['init_checkpoint']
+    
     data_dir = params['data_dir']
     output_dir = params['output_dir']
     max_seq_length = params['max_seq_length']
-    save_file = True
 
     processors = {
         "ner": NerProcessor
@@ -208,26 +205,25 @@ if __name__ == '__main__':
     eval_examples = processor.get_dev_examples(data_dir)
     test_examples = processor.get_test_examples(data_dir)
 
-    # Save temp data
-    # processor.save_examples(train_examples, 'train.txt')
-    # processor.save_examples(eval_examples, 'eval.txt')
-    # processor.save_examples(test_examples, 'test.txt')
-
     # Process data
     label_2_id = processor.get_labels()
-    tokenizer = tokenization.FullTokenizer(vocab_file=os.path.join(init_checkpoint, 'vocab.txt'), 
+    tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
                                            do_lower_case=True)
 
     map_fn = map_fn_builder(label_2_id, tokenizer, max_seq_length)
-    train_se = map(map_fn, train_examples)
-    eval_se = map(map_fn, eval_examples)
-    test_se = map(map_fn, test_examples)
-
+    train_se = list(map(map_fn, train_examples))
+    eval_se = list(map(map_fn, eval_examples))
+    test_se = list(map(map_fn, test_examples))    
+    
     # Save processed data
     # [num_samples, 4, max_seq_length]
-    if save_file:
-        np.save(os.path.join(output_dir, params['train_file']), train_se)
-        np.save(os.path.join(output_dir, params['eval_file']), eval_se)
-        np.save(os.path.join(output_dir, params['test_file']), test_se)
+    np.save(os.path.join(output_dir, params['train_file']), train_se)
+    np.save(os.path.join(output_dir, params['eval_file']), eval_se)
+    np.save(os.path.join(output_dir, params['test_file']), test_se)
 
+
+if __name__ == '__main__':
+
+    param_file = 'src/params.json'
+    main(param_file)
 

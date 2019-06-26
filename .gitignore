@@ -1,6 +1,8 @@
 .DS_Store
 *.pyc
-__pycache__
 *.npy
-data/chinese_L-12_H-768_A-12
 
+__pycache__
+data/chinese_L-12_H-768_A-12
+data/processed
+results/*
