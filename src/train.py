@@ -48,7 +48,7 @@ def input_fn(filepath, params=None, shuffle_and_repeat=False):
     return dataset
  
 
- def model_fn(features, labels, mode, params):
+def model_fn(features, labels, mode, params):
     """
     Model function, only features and labels are required, others are optional.
     params features: ([N, S], [N]), first item returned from input_fn
