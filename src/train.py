@@ -10,6 +10,7 @@ import numpy as np
 import tensorflow as tf
 # from tf_metrics import precision, recall, f1
 
+from src.models import Model
 from src.bert import modeling
 from src.bert import optimization
 
