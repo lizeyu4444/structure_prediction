@@ -2,8 +2,8 @@
     "task_name": "ner",
 
     "data_dir": "data/raw",
-    "output_dir": "data/processed",
-    "model_dir": "/content/gdrive/My Drive/results/bert_ner/model",
+    "output_dir": "/content/gdrive/My Drive/colab/bert_ner/data/processed",
+    "model_dir": "/content/gdrive/My Drive/colab/bert_ner/model",
     "bert_config": "./gdrive/My Drive/chinese_L-12_H-768_A-12/bert_config.json",
     "init_checkpoint": "./gdrive/My Drive/chinese_L-12_H-768_A-12/bert_model.ckpt",
     "vocab_file": "./gdrive/My Drive/chinese_L-12_H-768_A-12/vocab.txt",
