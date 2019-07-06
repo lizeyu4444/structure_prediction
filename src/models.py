@@ -79,12 +79,11 @@ class Model(object):
                                                                                 # True for TPU else False
         # [N, S, D]
         embeddings = model.get_sequence_output()
-        embeddings = tf.layers.dropout(embeddings, 
-                                       rate=self.params['dropout'], 
-                                       training=self.is_training)
 
         # RNN layers
-        if self.params['num_layers'] > 0:
+        if self.params['num_layers'] < 1:
+            outputs = embeddings
+        else:
             cell_fw, cell_bw = self._bidirectional_rnn()
             if self.params['num_layers'] > 1:
                 cell_fw = rnn.MultiRNNCell([cell_fw]*self.params['num_layers'], state_is_tupe=True)
@@ -92,8 +91,10 @@ class Model(object):
             outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, embeddings,
                                                          dtype=tf.float32)
             outputs = tf.concat(outputs, axis=-1)
-        else:
-            outputs = embeddings
+            outputs = tf.layers.dropout(outputs, 
+                                        rate=self.params['dropout'], 
+                                        training=self.is_training)
+            outputs = tf.layers.dense(outputs, self.params['hidden_size'])
 
         # Project final layer
         # [N, S, T]

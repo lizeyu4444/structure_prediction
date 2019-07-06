@@ -23,6 +23,6 @@
     
     "cell_type": "lstm",
     "hidden_size": 126,
-    "dropout": 0.8,
+    "dropout": 0.2,
     "num_layers": 1
 }

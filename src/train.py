@@ -87,9 +87,10 @@ def model_fn(features, labels, mode, params):
         export_outputs = {
             'predction': tf.estimator.export.PredictOutput(preds)
         }
+        ##???
         # predictions is required when predicting
         return tf.estimator.EstimatorSpec(mode=mode,
-                                          predctions=predctions,
+                                          predctions=pred_ids,
                                           export_outputs=export_outputs)
     else:
         # Loss
@@ -107,9 +108,6 @@ def model_fn(features, labels, mode, params):
         #     'recall': recall(labels, pred_ids, num_labels, indices, weights)
         #     'f1': f1(labels, pred_ids, num_labels, indices, weights)
         # }
-        metrics = {
-            "eval_loss": tf.metrics.mean_squared_error(labels, pred_ids)
-        }
 
         if mode == tf.estimator.ModeKeys.TRAIN:
             train_op = optimization.create_optimizer(loss, 
@@ -120,6 +118,9 @@ def model_fn(features, labels, mode, params):
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
 
         elif mode == tf.estimator.ModeKeys.EVAL:
+            metrics = {
+                "eval_loss": tf.metrics.mean_squared_error(labels, pred_ids)
+            }
             # loss is required when eval
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, eval_metric_ops=metrics)
 
