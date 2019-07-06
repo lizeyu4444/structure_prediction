@@ -125,12 +125,9 @@ def model_fn(features, labels, mode, params):
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, eval_metric_ops=metrics)
 
 
-def main(param_file):
+def main(params):
 
-    # Params
-    with open(param_file, 'r') as fi:
-        params = json.load(fi)
-
+    # Modify params
     with open(os.path.join(params['output_dir'], params['tag_file']), 'r') as fi:
         tag_list = [t.strip() for t in fi.readlines() if t.strip()]
         params['num_labels'] = len(tag_list)
@@ -200,5 +197,8 @@ def main(param_file):
 if __name__ == '__main__':
 
     param_file = 'src/params.json'
-    main(param_file)
+    with open(param_file, 'r') as fi:
+        params = json.load(fi)
+
+    main(params)
 

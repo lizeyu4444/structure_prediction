@@ -2,7 +2,7 @@
     "task_name": "ner",
 
     "data_dir": "data/raw",
-    "output_dir": "data/processed",
+    "output_dir": "results/processed",
     "model_dir": "results/model",
     "bert_config": "data/chinese_L-12_H-768_A-12/bert_config.json",
     "init_checkpoint": "data/chinese_L-12_H-768_A-12/bert_model.ckpt",

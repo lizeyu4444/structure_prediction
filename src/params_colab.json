@@ -2,8 +2,8 @@
     "task_name": "ner",
 
     "data_dir": "data/raw",
-    "output_dir": "/content/gdrive/My Drive/colab/bert_ner/data/processed",
-    "model_dir": "/content/gdrive/My Drive/colab/bert_ner/model",
+    "output_dir": "results/processed",
+    "model_dir": "results/model",
     "bert_config": "./gdrive/My Drive/chinese_L-12_H-768_A-12/bert_config.json",
     "init_checkpoint": "./gdrive/My Drive/chinese_L-12_H-768_A-12/bert_model.ckpt",
     "vocab_file": "./gdrive/My Drive/chinese_L-12_H-768_A-12/vocab.txt",
@@ -18,8 +18,8 @@
     "epochs": 5,
     "learning_rate": 0.1,
     "num_warmup_steps": 2,
-    "save_ckpt_steps": 200,
-    "log_every_steps": 20,
+    "save_ckpt_steps": 1000,
+    "log_every_steps": 50,
     
     "cell_type": "lstm",
     "hidden_size": 126,

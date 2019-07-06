@@ -186,12 +186,9 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
     return map_fn
 
 
-def main(param_file):
-    """Main function to process data."""
-    # Load params
-    with open(param_file, 'rb') as fi:
-        params = json.load(fi)
-    
+def main(params):
+
+    # Params
     data_dir = params['data_dir']
     output_dir = params['output_dir']
     max_seq_length = params['max_seq_length']
@@ -226,5 +223,8 @@ def main(param_file):
 if __name__ == '__main__':
 
     param_file = 'src/params.json'
-    main(param_file)
+    with open(param_file, 'r') as fi:
+        params = json.load(fi)
+
+    main(params)
 
