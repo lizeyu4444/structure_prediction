@@ -54,7 +54,7 @@ def input_fn(filepath, params=None, shuffle_and_repeat=False):
 
     dataset = np.load(filepath).item()
     for d in dataset:
-        dataset[d].astype(np.int32)
+        dataset[d] = np.array(dataset[d], dtype=np.int32)
     labels = dataset['label_ids']
     del dataset['label_ids']
     dataset = tf.data.Dataset.from_tensor_slices((dataset, labels))
@@ -152,7 +152,7 @@ def main(params):
     train_file = os.path.join(params['output_dir'], params['train_file'])
     eval_file = os.path.join(params['output_dir'], params['eval_file'])
 
-    num_examples = np.load(train_file).item()['input_ids'].shape[0]
+    num_examples = len(np.load(train_file).item()['input_ids'])
     params['num_train_steps'] = int(num_examples*1.0/params['batch_size']*params['epochs'])
     params['bert_config'] = modeling.BertConfig.from_json_file(params['bert_config'])
 
