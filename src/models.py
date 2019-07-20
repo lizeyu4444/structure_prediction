@@ -66,7 +66,6 @@ class Model(object):
         input_ids = features['input_ids']
         input_mask = features['input_mask']
         segment_ids = features['segment_ids']
-        label_ids = features['label_ids']
         nwords = features['nwords']
 
         # Bert embeddings

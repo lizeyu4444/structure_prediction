@@ -78,13 +78,11 @@ class NerProcessor(DataProcessor):
 
     def get_train_examples(self, data_dir):
         return self._create_example(
-            self._read_data(os.path.join(data_dir, "example.train")), "train"
-        )
+            self._read_data(os.path.join(data_dir, "example.train")), "train")
 
     def get_dev_examples(self, data_dir):
         return self._create_example(
-            self._read_data(os.path.join(data_dir, "example.dev")), "dev"
-        )
+            self._read_data(os.path.join(data_dir, "example.dev")), "dev")
 
     def get_test_examples(self, data_dir):
         return self._create_example(
@@ -149,28 +147,63 @@ class NerProcessor(DataProcessor):
                 f.write('\t'.join(example) + '\n')
 
 
+# def map_fn_builder1(label_2_id, tokenizer, max_seq_length):
+#     """Function builder for input transformation."""
+#     def map_fn(example):
+#         # tokenize
+#         tokens = tokenizer.tokenize(example[0])
+#         labels = example[1].split()
+#         if len(tokens) > max_seq_length-2:
+#             tokens = tokens[0:(max_seq_length-2)]
+#             labels = labels[0:(max_seq_length-2)]
+
+#         # for loop
+#         # input_ids: token ids
+#         # input_mask: mask to the input
+#         # segment_ids: distinguish the first sentence(0) and second one(1)
+#         # label_ids: label ids
+#         tokens = ['[CLS]'] + tokens + ['[SEP]']
+#         labels = ['[CLS]'] + labels + ['[SEP]']
+#         segment_ids = []
+#         label_ids = []
+#         for i, token in enumerate(tokens):
+#             segment_ids.append(0)
+#             label_ids.append(label_2_id[labels[i]])
+#         input_ids = tokenizer.convert_tokens_to_ids(tokens)
+#         input_mask = [1]*len(input_ids)
+
+#         # padding
+#         while len(input_ids) < max_seq_length:
+#             input_ids.append(0)
+#             input_mask.append(0)
+#             segment_ids.append(0)
+#             label_ids.append(0)
+
+#         return input_ids, input_mask, segment_ids, label_ids
+      
+#     return map_fn
+
 def map_fn_builder(label_2_id, tokenizer, max_seq_length):
-    """Function builder for input transformation."""
     def map_fn(example):
-        # tokenize
-        tokens = tokenizer.tokenize(example[0])
-        labels = example[1].split()
+        """
+        Map function for an example.
+        Args:
+            tuple of (text, label), label can be None when inference
+        return:
+            input_ids: token ids
+            input_mask: mask to the input
+            segment_ids: distinguish the first sentence(0) and second one(1)
+            label_ids: label ids
+        """
+        tokens = tokenizer.tokenize(example[0])            
         if len(tokens) > max_seq_length-2:
             tokens = tokens[0:(max_seq_length-2)]
-            labels = labels[0:(max_seq_length-2)]
-
-        # for loop
-        # input_ids: token ids
-        # input_mask: mask to the input
-        # segment_ids: distinguish the first sentence(0) and second one(1)
-        # label_ids: label ids
+            
         tokens = ['[CLS]'] + tokens + ['[SEP]']
-        labels = ['[CLS]'] + labels + ['[SEP]']
+        nwords = len(tokens)
         segment_ids = []
-        label_ids = []
         for i, token in enumerate(tokens):
             segment_ids.append(0)
-            label_ids.append(label_2_id[labels[i]])
         input_ids = tokenizer.convert_tokens_to_ids(tokens)
         input_mask = [1]*len(input_ids)
 
@@ -179,12 +212,28 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
             input_ids.append(0)
             input_mask.append(0)
             segment_ids.append(0)
-            label_ids.append(0)
 
-        return input_ids, input_mask, segment_ids, label_ids
-      
+        features = {
+            'input_ids': input_ids, 
+            'input_mask': input_mask,
+            'segment_ids': segment_ids,
+            'nwords': nwords
+        }
+
+        # When inference, labels is None
+        if example[1] is not None:
+            labels = example[1].split()
+            if len(labels) > max_seq_length-2:
+                labels = labels[0:(max_seq_length-2)]
+            labels = ['[CLS]'] + labels + ['[SEP]']
+            label_ids = [label_2_id[label] for label in labels]
+            while len(label_ids) < max_seq_length:
+                label_ids.append(0)
+            features['label_ids'] = label_ids
+        
+        return features
+
     return map_fn
-
 
 def main(params):
 
@@ -194,7 +243,7 @@ def main(params):
     max_seq_length = params['max_seq_length']
 
     processors = {
-        "ner": NerProcessor
+        'ner': NerProcessor
     }
 
     # Load data

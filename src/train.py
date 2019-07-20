@@ -27,19 +27,37 @@ handlers = [
 logging.getLogger('tensorflow').handlers = handlers
 
 
+# def input_fn(filepath, params=None, shuffle_and_repeat=False):
+#     """Input function for estimator."""
+#     params = params if params is not None else {}
+
+#     dataset = np.load(filepath).astype(np.int32)
+#     dataset = tf.data.Dataset.from_tensor_slices(dataset)
+#     dataset = dataset.map(lambda x: {
+#         'input_ids': x[0, :],
+#         'input_mask': x[1, :],
+#         'segment_ids': x[2, :],
+#         'label_ids': x[3, :],
+#         'nwords': tf.reduce_sum(tf.sign(x[0, :]))
+#     })
+    
+#     if shuffle_and_repeat:
+#         dataset = dataset.shuffle(params['buffer']).repeat(params['epochs'])
+        
+#     dataset =  dataset.batch(params.get('batch_size', 20)).prefetch(20)
+    
+#     return dataset
+ 
 def input_fn(filepath, params=None, shuffle_and_repeat=False):
     """Input function for estimator."""
     params = params if params is not None else {}
 
-    dataset = np.load(filepath).astype(np.int32)
-    dataset = tf.data.Dataset.from_tensor_slices(dataset)
-    dataset = dataset.map(lambda x: {
-        'input_ids': x[0, :],
-        'input_mask': x[1, :],
-        'segment_ids': x[2, :],
-        'label_ids': x[3, :],
-        'nwords': tf.reduce_sum(tf.sign(x[0, :]))
-    })
+    dataset = np.load(filepath).item()
+    for d in dataset:
+        dataset[d].astype(np.int32)
+    labels = dataset['label_ids']
+    del dataset['label_ids']
+    dataset = tf.data.Dataset.from_tensor_slices((dataset, labels))
     
     if shuffle_and_repeat:
         dataset = dataset.shuffle(params['buffer']).repeat(params['epochs'])
@@ -47,18 +65,13 @@ def input_fn(filepath, params=None, shuffle_and_repeat=False):
     dataset =  dataset.batch(params.get('batch_size', 20)).prefetch(20)
     
     return dataset
- 
 
 def model_fn(features, labels, mode, params):
-    """
-    Model function, only features and labels are required, others are optional.
-    params features: dict, `nwords` is number and each else has shape of [N, S] 
-    params labels: None, here label is included in features
+    """Model function.
+        features: dict, each value is tensor, [N, S], except `nwords` is [N]
+        labels: tensor, [N, S], label ids
     """ 
-    if labels is None:
-        labels = features.get('label_ids')
     nwords = features['nwords']
-    
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
     # Init model
