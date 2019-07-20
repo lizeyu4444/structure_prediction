@@ -254,25 +254,25 @@ def main(params):
     
     # Change format
     train_se = {
-        'input_ids': train_se[0], 
-        'input_mask': train_se[1],
-        'segment_ids': train_se[2],
-        'nwords': train_se[3],
-        'label_ids': train_se[4]
+        'input_ids': [i[0] for i in train_se], 
+        'input_mask': [i[1] for i in train_se],
+        'segment_ids': [i[2] for i in train_se],
+        'nwords': [i[3] for i in train_se],
+        'label_ids': [i[4] for i in train_se]
     }
     eval_se = {
-        'input_ids': eval_se[0], 
-        'input_mask': eval_se[1],
-        'segment_ids': eval_se[2],
-        'nwords': eval_se[3],
-        'label_ids': eval_se[4]
+        'input_ids': [i[0] for i in eval_se], 
+        'input_mask': [i[1] for i in eval_se],
+        'segment_ids': [i[2] for i in eval_se],
+        'nwords': [i[3] for i in eval_se],
+        'label_ids': [i[4] for i in eval_se]
     }
     test_se = {
-        'input_ids': test_se[0], 
-        'input_mask': test_se[1],
-        'segment_ids': test_se[2],
-        'nwords': test_se[3],
-        'label_ids': test_se[4]
+        'input_ids': [i[0] for i in test_se], 
+        'input_mask': [i[1] for i in test_se],
+        'segment_ids': [i[2] for i in test_se],
+        'nwords': [i[3] for i in test_se],
+        'label_ids': [i[4] for i in test_se]
     }
     # Save processed data
     # [num_samples, 4, max_seq_length]
