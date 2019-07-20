@@ -185,8 +185,7 @@ class NerProcessor(DataProcessor):
 
 def map_fn_builder(label_2_id, tokenizer, max_seq_length):
     def map_fn(example):
-        """
-        Map function for an example.
+        """Map function for an example.
         Args:
             tuple of (text, label), label can be None when inference
         return:
@@ -213,13 +212,6 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
             input_mask.append(0)
             segment_ids.append(0)
 
-        features = {
-            'input_ids': input_ids, 
-            'input_mask': input_mask,
-            'segment_ids': segment_ids,
-            'nwords': nwords
-        }
-
         # When inference, labels is None
         if example[1] is not None:
             labels = example[1].split()
@@ -229,14 +221,13 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
             label_ids = [label_2_id[label] for label in labels]
             while len(label_ids) < max_seq_length:
                 label_ids.append(0)
-            features['label_ids'] = label_ids
-        
-        return features
+            return input_ids, input_mask, segment_ids, nwords, label_ids
+        return input_ids, input_mask, segment_ids, nwords
 
     return map_fn
 
-def main(params):
 
+def main(params):
     # Params
     data_dir = params['data_dir']
     output_dir = params['output_dir']
@@ -256,12 +247,33 @@ def main(params):
     label_2_id = processor.get_labels()
     tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
                                            do_lower_case=True)
-
     map_fn = map_fn_builder(label_2_id, tokenizer, max_seq_length)
     train_se = list(map(map_fn, train_examples))
     eval_se = list(map(map_fn, eval_examples))
-    test_se = list(map(map_fn, test_examples))    
+    test_se = list(map(map_fn, test_examples))
     
+    # Change format
+    train_se = {
+        'input_ids': train_se[0], 
+        'input_mask': train_se[1],
+        'segment_ids': train_se[2],
+        'nwords': train_se[3],
+        'label_ids': train_se[4]
+    }
+    eval_se = {
+        'input_ids': eval_se[0], 
+        'input_mask': eval_se[1],
+        'segment_ids': eval_se[2],
+        'nwords': eval_se[3],
+        'label_ids': eval_se[4]
+    }
+    test_se = {
+        'input_ids': test_se[0], 
+        'input_mask': test_se[1],
+        'segment_ids': test_se[2],
+        'nwords': test_se[3],
+        'label_ids': test_se[4]
+    }
     # Save processed data
     # [num_samples, 4, max_seq_length]
     np.save(os.path.join(output_dir, params['train_file']), train_se)
