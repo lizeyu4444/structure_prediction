@@ -52,8 +52,8 @@ def input_fn(filepath, params=None, shuffle_and_repeat=False):
 def model_fn(features, labels, mode, params):
     """
     Model function, only features and labels are required, others are optional.
-    params features: ([N, S], [N]), first item returned from input_fn
-    params labels: [N, S], second item returned from input_fn
+    params features: dict, `nwords` is number and each else has shape of [N, S] 
+    params labels: None, here label is included in features
     """ 
     if labels is None:
         labels = features.get('label_ids')
@@ -90,7 +90,7 @@ def model_fn(features, labels, mode, params):
         ##???
         # predictions is required when predicting
         return tf.estimator.EstimatorSpec(mode=mode,
-                                          predctions=pred_ids,
+                                          predictions=pred_ids,
                                           export_outputs=export_outputs)
     else:
         # Loss
