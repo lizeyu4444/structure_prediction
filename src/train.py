@@ -152,7 +152,7 @@ def main(params):
     train_file = os.path.join(params['output_dir'], params['train_file'])
     eval_file = os.path.join(params['output_dir'], params['eval_file'])
 
-    num_examples = np.load(train_file).shape[0]
+    num_examples = np.load(train_file).item()['input_ids'].shape[0]
     params['num_train_steps'] = int(num_examples*1.0/params['batch_size']*params['epochs'])
     params['bert_config'] = modeling.BertConfig.from_json_file(params['bert_config'])
 
