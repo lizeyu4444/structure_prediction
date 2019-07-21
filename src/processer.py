@@ -254,9 +254,9 @@ def main(params):
     }
 
     # Save input data
-    np.save(os.path.join(output_dir, 'train.npy'), train_se)
-    np.save(os.path.join(output_dir, 'eval.npy'), eval_se)
-    np.save(os.path.join(output_dir, 'test.npy'), test_se)
+    np.save(os.path.join(output_dir, params['train_file']), train_se)
+    np.save(os.path.join(output_dir, params['eval_file']), eval_se)
+    np.save(os.path.join(output_dir, params['test_file']), test_se)
 
 
 if __name__ == '__main__':

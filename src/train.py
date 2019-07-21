@@ -171,13 +171,13 @@ def main(params):
 
     # Predict
     processer = NerProcessor(params['output_dir'])
-    id_2_label = processor.get_labels(reverse=True)
+    id_2_label = processer.get_labels(reverse=True)
     score_dir = 'results/score'
     if not os.path.exists(score_dir):
         os.makedirs(score_dir)
     def write_predictions(name):
-        with open(os.path.join(score_dir, '{}.preds.txt'.format(name)), 'wb') as fi:
-            test_file = os.path.join(params['output_dir'], name+'.npy')
+        with open(os.path.join(score_dir, '{}.preds.txt'.format(name)), 'w') as fi:
+            test_file = os.path.join(params['output_dir'], '{}.npy'.format(name))
             test_inpf = functools.partial(input_fn, test_file)
             pred_ids = estimator.predict(test_inpf)
             test_examples = processer.load_examples(name)
