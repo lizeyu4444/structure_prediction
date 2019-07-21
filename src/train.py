@@ -175,7 +175,8 @@ def main(params_):
 
     # Predict
     processer = NerProcessor(params['output_dir'])
-    id_2_label = processer.get_labels(reverse=True)
+    # id_2_label = processer.get_labels(reverse=True) # Not work now
+    id_2_label = {i:l for l,i in label_2_id.items()}
     score_dir = 'results/score'
     if not os.path.exists(score_dir):
         os.makedirs(score_dir)

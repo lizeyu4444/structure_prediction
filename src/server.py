@@ -17,7 +17,8 @@ with open(param_file, 'r') as fi:
 
 processor = NerProcessor(params['output_dir'])
 label_2_id = processor.get_labels()
-id_2_label = processor.get_labels(reverse=True)
+# id_2_label = processor.get_labels(reverse=True)
+id_2_label = {i:l for l,i in label_2_id.items()}
 tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
                                        do_lower_case=True)
 
