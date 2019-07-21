@@ -2,6 +2,7 @@
 
 import os
 import time
+import json
 import glob
 
 from tensorflow.contrib import predictor
@@ -13,7 +14,7 @@ from src.bert import tokenization
 param_file = 'src/params_colab.json'
 with open(param_file, 'r') as fi:
     params = json.load(fi)
-    
+
 processor = NerProcessor(params['output_dir'])
 id_2_label = processor.get_labels(reverse=True)
 tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
