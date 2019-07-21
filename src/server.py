@@ -6,8 +6,8 @@ import json
 import glob
 
 from tensorflow.contrib import predictor
-from src.processer import NerProcessor
 from src.bert import tokenization
+from src.processer import NerProcessor, map_fn_builder
 
 
 # Load params
