@@ -16,6 +16,7 @@ with open(param_file, 'r') as fi:
     params = json.load(fi)
 
 processor = NerProcessor(params['output_dir'])
+label_2_id = processor.get_labels()
 id_2_label = processor.get_labels(reverse=True)
 tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
                                        do_lower_case=True)

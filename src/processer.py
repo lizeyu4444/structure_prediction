@@ -103,7 +103,7 @@ class NerProcessor(DataProcessor):
                 examples.append((line[0].strip(), line[1].strip()))
         return examples
 
-    def get_labels(self, reverse=True):
+    def get_labels(self, reverse=False):
         if os.path.exists(os.path.join(self.output_dir, 'tags.txt')):
             with codecs.open(os.path.join(self.output_dir, 'tags.txt'), 'r') as fi:
                 label_list = [l.strip() for l in fi.readlines() if l.strip()]
