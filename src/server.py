@@ -9,7 +9,11 @@ from src.processer import NerProcessor
 from src.bert import tokenization
 
 
-# Load label file
+# Load params
+param_file = 'src/params_colab.json'
+with open(param_file, 'r') as fi:
+    params = json.load(fi)
+    
 processor = NerProcessor(params['output_dir'])
 id_2_label = processor.get_labels(reverse=True)
 tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
