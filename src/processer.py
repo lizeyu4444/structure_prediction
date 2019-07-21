@@ -72,7 +72,6 @@ class NerProcessor(DataProcessor):
     def __init__(self, output_dir):
         self.labels = set()
         self.output_dir = output_dir
-
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -88,20 +87,35 @@ class NerProcessor(DataProcessor):
         return self._create_example(
             self._read_data(os.path.join(data_dir, "example.test")), "test")
 
-    def save_examples(self, data, filename):
-        self._write_data(data, os.path.join(self.output_dir, filename))
+    def save_examples(self, examples, name):
+        """Writes a BIO data."""
+        with codecs.open(os.path.join(self.output_dir, name+'.proc'), 'w') as fi:
+            for example in examples:
+                fi.write('|||'.join(example) + '\n')
 
-    def get_labels(self):
+    def load_examples(self, name):
+        """Loads a BIO data."""
+        examples = []
+        with codecs.open(os.path.join(self.output_dir, name+'.proc'), 'r') as fi:
+            for line in fi.readlines():
+                line = line.split('|||')
+                if len(line) != 2: continue
+                examples.append((line[0].strip(), line[1].strip()))
+        return examples
+
+    def get_labels(self, reverse=True):
         if os.path.exists(os.path.join(self.output_dir, 'tags.txt')):
-            with codecs.open(os.path.join(self.output_dir, 'tags.txt'), 'r') as f:
-                label_list = [l.strip() for l in f.readlines() if l.strip()]
+            with codecs.open(os.path.join(self.output_dir, 'tags.txt'), 'r') as fi:
+                label_list = [l.strip() for l in fi.readlines() if l.strip()]
         else:
             self.labels = self.labels.union(set(['X', '[CLS]', '[SEP]']))
             label_list = list(self.labels)
             label_list.remove('O')
             label_list = ['O'] + label_list
-            with codecs.open(os.path.join(self.output_dir, 'tags.txt'), 'w') as f:
-                f.write('\n'.join(label_list))
+            with codecs.open(os.path.join(self.output_dir, 'tags.txt'), 'w') as fi:
+                fi.write('\n'.join(label_list))
+        if reverse:
+            dict(zip(range(len(label_list)), label_list))
         return dict(zip(label_list, range(len(label_list))))
 
     def _create_example(self, lines, set_type):
@@ -140,48 +154,6 @@ class NerProcessor(DataProcessor):
                 #     continue
             return lines
 
-    def _write_data(self, examples, output_file):
-        """Writes a BIO data."""
-        with codecs.open(output_file, 'w') as f:
-            for example in examples:
-                f.write('\t'.join(example) + '\n')
-
-
-# def map_fn_builder1(label_2_id, tokenizer, max_seq_length):
-#     """Function builder for input transformation."""
-#     def map_fn(example):
-#         # tokenize
-#         tokens = tokenizer.tokenize(example[0])
-#         labels = example[1].split()
-#         if len(tokens) > max_seq_length-2:
-#             tokens = tokens[0:(max_seq_length-2)]
-#             labels = labels[0:(max_seq_length-2)]
-
-#         # for loop
-#         # input_ids: token ids
-#         # input_mask: mask to the input
-#         # segment_ids: distinguish the first sentence(0) and second one(1)
-#         # label_ids: label ids
-#         tokens = ['[CLS]'] + tokens + ['[SEP]']
-#         labels = ['[CLS]'] + labels + ['[SEP]']
-#         segment_ids = []
-#         label_ids = []
-#         for i, token in enumerate(tokens):
-#             segment_ids.append(0)
-#             label_ids.append(label_2_id[labels[i]])
-#         input_ids = tokenizer.convert_tokens_to_ids(tokens)
-#         input_mask = [1]*len(input_ids)
-
-#         # padding
-#         while len(input_ids) < max_seq_length:
-#             input_ids.append(0)
-#             input_mask.append(0)
-#             segment_ids.append(0)
-#             label_ids.append(0)
-
-#         return input_ids, input_mask, segment_ids, label_ids
-      
-#     return map_fn
 
 def map_fn_builder(label_2_id, tokenizer, max_seq_length):
     def map_fn(example):
@@ -194,7 +166,7 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
             segment_ids: distinguish the first sentence(0) and second one(1)
             label_ids: label ids
         """
-        tokens = tokenizer.tokenize(example[0])            
+        tokens = example[0].split() 
         if len(tokens) > max_seq_length-2:
             tokens = tokens[0:(max_seq_length-2)]
             
@@ -233,20 +205,26 @@ def main(params):
     output_dir = params['output_dir']
     max_seq_length = params['max_seq_length']
 
-    processors = {
-        'ner': NerProcessor
-    }
-
     # Load data
-    processor = processors['ner'](output_dir)
+    processor = NerProcessor(output_dir)
     train_examples = processor.get_train_examples(data_dir)
     eval_examples = processor.get_dev_examples(data_dir)
     test_examples = processor.get_test_examples(data_dir)
 
-    # Process data
+    # Tokenize
+    """
+    Some dataset needs to be tokenized, but this dataset has been tokenized.
+    """
     label_2_id = processor.get_labels()
     tokenizer = tokenization.FullTokenizer(vocab_file=params['vocab_file'], 
                                            do_lower_case=True)
+
+    # Save data
+    processor.save_examples(train_examples, 'train')
+    processor.save_examples(eval_examples, 'eval')
+    processor.save_examples(test_examples, 'test')
+
+    # Process and convert to model inputs
     map_fn = map_fn_builder(label_2_id, tokenizer, max_seq_length)
     train_se = list(map(map_fn, train_examples))
     eval_se = list(map(map_fn, eval_examples))
@@ -274,11 +252,11 @@ def main(params):
         'nwords': [i[3] for i in test_se],
         'label_ids': [i[4] for i in test_se]
     }
-    # Save processed data
-    # [num_samples, 4, max_seq_length]
-    np.save(os.path.join(output_dir, params['train_file']), train_se)
-    np.save(os.path.join(output_dir, params['eval_file']), eval_se)
-    np.save(os.path.join(output_dir, params['test_file']), test_se)
+
+    # Save input data
+    np.save(os.path.join(output_dir, 'train.npy'), train_se)
+    np.save(os.path.join(output_dir, 'eval.npy'), eval_se)
+    np.save(os.path.join(output_dir, 'test.npy'), test_se)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,7 @@ import numpy as np
 import tensorflow as tf
 # from tf_metrics import precision, recall, f1
 
+from src.processer import NerProcessor
 from src.models import Model
 from src.bert import modeling
 from src.bert import optimization
@@ -26,27 +27,6 @@ handlers = [
 ]
 logging.getLogger('tensorflow').handlers = handlers
 
-
-# def input_fn(filepath, params=None, shuffle_and_repeat=False):
-#     """Input function for estimator."""
-#     params = params if params is not None else {}
-
-#     dataset = np.load(filepath).astype(np.int32)
-#     dataset = tf.data.Dataset.from_tensor_slices(dataset)
-#     dataset = dataset.map(lambda x: {
-#         'input_ids': x[0, :],
-#         'input_mask': x[1, :],
-#         'segment_ids': x[2, :],
-#         'label_ids': x[3, :],
-#         'nwords': tf.reduce_sum(tf.sign(x[0, :]))
-#     })
-    
-#     if shuffle_and_repeat:
-#         dataset = dataset.shuffle(params['buffer']).repeat(params['epochs'])
-        
-#     dataset =  dataset.batch(params.get('batch_size', 20)).prefetch(20)
-    
-#     return dataset
  
 def input_fn(filepath, params=None, shuffle_and_repeat=False):
     """Input function for estimator."""
@@ -65,6 +45,7 @@ def input_fn(filepath, params=None, shuffle_and_repeat=False):
     dataset =  dataset.batch(params.get('batch_size', 20)).prefetch(20)
     
     return dataset
+
 
 def model_fn(features, labels, mode, params):
     """Model function.
@@ -139,7 +120,6 @@ def model_fn(features, labels, mode, params):
 
 
 def main(params):
-
     # Modify params
     with open(os.path.join(params['output_dir'], params['tag_file']), 'r') as fi:
         tag_list = [t.strip() for t in fi.readlines() if t.strip()]
@@ -190,21 +170,25 @@ def main(params):
     tf.estimator.train_and_evaluate(estimator, train_spec, eval_spec)
 
     # Predict
+    processer = NerProcessor(params['output_dir'])
+    id_2_label = processor.get_labels(reverse=True)
     score_dir = 'results/score'
+    if not os.path.exists(score_dir):
+        os.makedirs(score_dir)
     def write_predictions(name):
-        if not os.path.exists(score_dir):
-             os.makedirs(score_dir)
-        with open(os.path.join(score_dir, '{}.preds.txt'.format(name)), 'wb') as f:
-            test_inpf = functools.partial(input_fn, '{}.npy'.format(name))
-            preds_gen = estimator.predict(test_inpf)
-            for golds, preds in zip(golds_gen, preds_gen):
-                ((words, _), tags) = golds
-                for word, tag, tag_pred in zip(words, tags, preds['tags']):
-                    f.write(' '.join([word, tag, tag_pred]) + '\n')
-                f.write('\n')
+        with open(os.path.join(score_dir, '{}.preds.txt'.format(name)), 'wb') as fi:
+            test_file = os.path.join(params['output_dir'], name+'.npy')
+            test_inpf = functools.partial(input_fn, test_file)
+            pred_ids = estimator.predict(test_inpf)
+            test_examples = processer.load_examples(name)
+            for example, ids in zip(test_examples, pred_ids):
+                words, tags = example[0].split(), example[1].split()
+                for word, tag, id in zip(words, tags, ids[1:]):
+                    fi.write(' '.join([word, tag, id_2_label[id]]) + '\n')
+                fi.write('\n')
 
-    # for name in ['train', 'eval', 'test']:
-    #     write_predictions(name)
+    for name in ['train', 'eval', 'test']:
+        write_predictions(name)
 
 
 if __name__ == '__main__':
