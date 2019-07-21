@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import os
 import json
 import copy
 import tensorflow as tf
