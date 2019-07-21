@@ -160,6 +160,7 @@ def map_fn_builder(label_2_id, tokenizer, max_seq_length):
         """Map function for an example.
         Args:
             tuple of (text, label), label can be None when inference
+            text/label: string, concatenated by space
         return:
             input_ids: token ids
             input_mask: mask to the input
@@ -261,6 +262,7 @@ def main(params):
 
 if __name__ == '__main__':
 
+    print('x')
     param_file = 'src/params.json'
     with open(param_file, 'r') as fi:
         params = json.load(fi)

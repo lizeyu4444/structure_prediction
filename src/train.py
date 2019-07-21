@@ -3,6 +3,7 @@
 import os
 import sys
 import json
+import copy
 import logging
 import functools
 
@@ -119,7 +120,10 @@ def model_fn(features, labels, mode, params):
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, eval_metric_ops=metrics)
 
 
-def main(params):
+def main(params_):
+    # Copy
+    params = copy.deepcopy(params_)
+
     # Modify params
     with open(os.path.join(params['output_dir'], params['tag_file']), 'r') as fi:
         tag_list = [t.strip() for t in fi.readlines() if t.strip()]
@@ -193,6 +197,7 @@ def main(params):
 
 if __name__ == '__main__':
 
+    print('x')
     param_file = 'src/params.json'
     with open(param_file, 'r') as fi:
         params = json.load(fi)
