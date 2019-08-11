@@ -45,10 +45,9 @@ def inference(data):
     
     pred_ids = predictions['pred_ids'].tolist()[0]
     tags = list(map(lambda x:id_2_label[x], pred_ids))
-    idx = tags.index('[SEP]')
     res = {
-        'pred_ids': pred_ids[:idx],
-        'tags': tags[:idx]
+        'pred_ids': pred_ids[:nwords],
+        'tags': tags[:nwords]
     }
     return res
 
